@@ -8,7 +8,7 @@ A custom extension framework for [Royal Panel](https://github.com/royaldevlopmen
 - **Comprehensive API** — `ExtensionLibrary` for managing extension configs, settings, and lifecycle
 - **Admin UI** — Neon Gaming themed extension manager with install/uninstall/toggle
 - **Full lifecycle management** — install, remove, enable/disable extensions via CLI or web
-- **Extension package support** — installs from `.blueprint` package format
+- **Extension package support** — installs from package files
 - **React hook injection** — placeholder component replacement, route registration, webpack integration
 - **Console commands** — `rx:install`, `rx:uninstall`, `rx:install-ext`, `rx:remove-ext`
 
@@ -27,7 +27,7 @@ php artisan migrate
 
 ```bash
 # Install an extension from a package file
-php artisan rx:install-ext /path/to/extension.blueprint
+php artisan rx:install-ext /path/to/extension-package
 
 # Remove an extension
 php artisan rx:remove-ext extension-id
