@@ -30,7 +30,7 @@ class ExtensionAdminController extends Controller
             'EXTENSION_NAME' => $ext->name,
             'EXTENSION_VERSION' => $ext->version,
             'EXTENSION_DESCRIPTION' => $ext->description,
-            'EXTENSION_ICON' => $ext->icon ?? '/rx-assets/default-icon.png',
+            'EXTENSION_ICON' => $ext->icon ?? '/rx-assets/default-icon.svg',
             'EXTENSION_WEBSITE' => $ext->website ?? '',
             'EXTENSION_WEBICON' => 'fa fa-globe',
             'blueprint' => $this->library,
