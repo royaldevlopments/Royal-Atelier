@@ -75,6 +75,7 @@ class ExtensionAdminController extends Controller
         foreach ($request->except(['_token', '_method']) as $key => $value) {
             $this->library->dbSet('rx', $key, $value);
         }
-        return redirect()->back()->with('success', 'Settings updated');
+        return redirect()->route('rxadmin.extensions.settings')
+            ->with('success', 'Settings saved successfully');
     }
 }

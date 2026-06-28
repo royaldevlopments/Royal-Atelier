@@ -423,9 +423,14 @@
             <i class="fa fa-search"></i>
             <input type="text" id="atelierSearch" placeholder="Search extensions..." oninput="filterExtensions(this.value)">
         </div>
-        <button class="atelier-btn atelier-btn-primary" onclick="$('#installModal').modal('show')">
-            <i class="fa fa-upload"></i> Install Extension
-        </button>
+        <div style="display:flex;gap:8px;">
+            <a href="{{ route('rxadmin.extensions.settings') }}" class="atelier-btn atelier-btn-ghost">
+                <i class="fa fa-cog"></i> Settings
+            </a>
+            <button class="atelier-btn atelier-btn-primary" onclick="$('#installModal').modal('show')">
+                <i class="fa fa-upload"></i> Install Extension
+            </button>
+        </div>
     </div>
 
     @if($total === 0)
