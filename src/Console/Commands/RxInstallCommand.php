@@ -7,7 +7,7 @@ use RoyalPanel\RoyalAtelier\Libraries\ExtensionLibrary;
 
 class RxInstallCommand extends Command
 {
-    protected $signature = 'rx:install {package : Path to .blueprint package file}';
+    protected $signature = 'rx:install {package : Path to extension package file}';
     protected $description = 'Install a Royal Extension package';
 
     public function handle(ExtensionLibrary $library): int

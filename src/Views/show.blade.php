@@ -29,6 +29,10 @@
                 </button>
             </form>
 
+            <a href="{{ route('rxadmin.extensions.' . $EXTENSION_ID . '.index') }}" class="atelier-btn atelier-btn-ghost">
+                <i class="fa fa-external-link"></i> Admin
+            </a>
+
             @if($EXTENSION_WEBSITE && $EXTENSION_WEBSITE != "[website]")
                 <a href="{{ $EXTENSION_WEBSITE }}" target="_blank" class="atelier-btn atelier-btn-ghost">
                     <i class="fa fa-globe"></i> Website
@@ -295,6 +299,10 @@
                     {{ $extension->enabled ? 'Disable Extension' : 'Enable Extension' }}
                 </button>
             </form>
+
+            <a href="{{ route('rxadmin.extensions.' . $EXTENSION_ID . '.index') }}" class="atelier-btn" style="width:100%;justify-content:center;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">
+                <i class="fa fa-external-link"></i> Open Admin Page
+            </a>
 
             <form action="{{ route('rxadmin.extensions.uninstall', $EXTENSION_ID) }}" method="POST" onsubmit="return confirm('Permanently uninstall {{ $EXTENSION_NAME }}? All files and hooks will be removed.');">
                 {{ csrf_field() }}

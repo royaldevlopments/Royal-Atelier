@@ -414,7 +414,7 @@
         <div class="atelier-stat" style="cursor:pointer;" onclick="$('#installModal').modal('show')">
             <div class="atelier-stat-icon" style="color:#a855f7;">+</div>
             <div class="atelier-stat-value" style="font-size:20px;margin-top:6px;">Install New</div>
-            <div class="atelier-stat-label">Upload .blueprint</div>
+            <div class="atelier-stat-label">Upload Package</div>
         </div>
     </div>
 
@@ -438,7 +438,7 @@
             <div class="atelier-empty" style="grid-column:1/-1;">
                 <div class="atelier-empty-icon">🧩</div>
                 <h4>No Extensions Installed</h4>
-                <p>Upload a .blueprint package to get started.</p>
+                <p>Upload an extension package to get started.</p>
                 <br>
                 <button class="atelier-btn atelier-btn-primary" onclick="$('#installModal').modal('show')">
                     <i class="fa fa-upload"></i> Install Your First Extension
@@ -485,10 +485,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Package File (.blueprint)</label>
-                        <input type="file" name="package" class="form-control" accept=".blueprint,.zip" required>
+                        <label>Package File</label>
+                        <input type="file" name="package" class="form-control" accept=".zip" required>
                         <p class="text-muted small" style="margin-top:6px;color:var(--atelier-muted);opacity:0.6;">
-                            Upload a .blueprint package file to install. Supports .blueprint and .zip formats.
+                            Upload an extension package to install.
                         </p>
                     </div>
                 </div>

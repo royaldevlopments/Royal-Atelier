@@ -17,7 +17,7 @@ class ExtensionAdminController extends Controller
         $extensions = \RoyalPanel\RoyalAtelier\Models\RxExtension::where('installed', true)->get();
         return view('rxadmin::index', [
             'extensions' => $extensions,
-            'blueprint' => $this->library,
+            'library' => $this->library,
         ]);
     }
 
@@ -33,13 +33,13 @@ class ExtensionAdminController extends Controller
             'EXTENSION_ICON' => $ext->icon ?? '/rx-assets/default-icon.svg',
             'EXTENSION_WEBSITE' => $ext->website ?? '',
             'EXTENSION_WEBICON' => 'fa fa-globe',
-            'blueprint' => $this->library,
+            'library' => $this->library,
         ]);
     }
 
     public function install(Request $request)
     {
-        $request->validate(['package' => 'required|file|mimes:zip,blueprint']);
+        $request->validate(['package' => 'required|file|mimes:zip']);
         $path = $request->file('package')->store('rx-packages');
         $result = $this->library->install(storage_path("app/{$path}"));
 
@@ -67,7 +67,7 @@ class ExtensionAdminController extends Controller
 
     public function settings()
     {
-        return view('rxadmin::settings', ['blueprint' => $this->library]);
+        return view('rxadmin::settings', ['library' => $this->library]);
     }
 
     public function updateSettings(Request $request)

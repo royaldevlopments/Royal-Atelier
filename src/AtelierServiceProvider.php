@@ -23,6 +23,7 @@ class AtelierServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
         $this->loadViewsFrom(__DIR__ . '/Views', 'rxadmin');
         $this->loadRoutesFrom(__DIR__ . '/Routes/rxadmin.php');
+        $this->loadRoutesFrom(__DIR__ . '/Routes/extensions.php');
 
         if ($this->app->runningInConsole()) {
             $this->commands([

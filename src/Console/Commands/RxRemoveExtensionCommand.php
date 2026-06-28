@@ -23,18 +23,18 @@ class RxRemoveExtensionCommand extends Command
         $this->info("Removing extension {$id}...");
 
         // Remove React component symlinks
-        $reactTarget = base_path("resources/scripts/blueprint/extensions/{$id}");
+        $reactTarget = base_path("resources/scripts/rx/extensions/{$id}");
         if (File::exists($reactTarget)) File::deleteDirectory($reactTarget);
 
         // Remove route symlinks
         foreach (['web', 'client', 'application'] as $type) {
-            $routeFile = base_path("routes/blueprint/{$type}/{$id}.php");
+            $routeFile = base_path("routes/rx/{$type}/{$id}.php");
             if (File::exists($routeFile)) File::delete($routeFile);
         }
 
         // Remove blade wrappers
         foreach (['dashboard', 'admin'] as $type) {
-            $wrapperFile = base_path("resources/views/blueprint/{$type}/wrappers/{$id}.blade.php");
+            $wrapperFile = base_path("resources/views/rx/{$type}/wrappers/{$id}.blade.php");
             if (File::exists($wrapperFile)) File::delete($wrapperFile);
         }
 
@@ -57,7 +57,7 @@ class RxRemoveExtensionCommand extends Command
 
     private function cleanPlaceholders(string $id): void
     {
-        $placeholderFiles = File::glob(base_path('resources/scripts/blueprint/components/**/*.tsx'));
+        $placeholderFiles = File::glob(base_path('resources/scripts/rx/components/**/*.tsx'));
         $componentName = str_replace('-', '', ucwords($id, '-'));
 
         foreach ($placeholderFiles as $file) {
@@ -65,7 +65,7 @@ class RxRemoveExtensionCommand extends Command
             $original = $content;
 
             $content = preg_replace(
-                "/import {$componentName} from '@blueprint\/extensions\/{$id}\/[^']+';/",
+                "/import {$componentName} from '@rx\/extensions\/{$id}\/[^']+';/",
                 '',
                 $content
             );
@@ -83,7 +83,7 @@ class RxRemoveExtensionCommand extends Command
 
     private function cleanNavigationRoutes(string $id): void
     {
-        $routesFile = base_path('resources/scripts/blueprint/extends/routers/routes.ts');
+        $routesFile = base_path('resources/scripts/rx/extends/routers/routes.ts');
         if (!File::exists($routesFile)) return;
 
         $content = File::get($routesFile);
@@ -91,7 +91,7 @@ class RxRemoveExtensionCommand extends Command
         $componentName = str_replace('-', '', ucwords($id, '-'));
 
         $content = preg_replace(
-            "/import {$componentName}Route from '@blueprint\/extensions\/{$id}\/[^']+';\n/",
+            "/import {$componentName}Route from '@rx\/extensions\/{$id}\/[^']+';\n/",
             '',
             $content
         );

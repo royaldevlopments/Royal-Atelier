@@ -15,7 +15,7 @@
 
 @section('content')
 @php
-    $settings = $blueprint->dbGetMany('rx');
+    $settings = $library->dbGetMany('rx');
     $flags = config('rxframework.flags', []);
 @endphp
 

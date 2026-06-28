@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class RxInstallExtensionCommand extends Command
 {
-    protected $signature = 'rx:install-ext {package : Path to .blueprint package file}';
+    protected $signature = 'rx:install-ext {package : Path to extension package file}';
     protected $description = 'Install a Royal Extension package with full lifecycle';
 
     private string $basePath;
@@ -40,11 +40,8 @@ class RxInstallExtensionCommand extends Command
             File::copyDirectory($devPath, $this->tmpPath);
             $this->identifier = 'dev';
         } else {
-            // Extract .blueprint package
+            // Extract extension package
             $packagePath = $packageArg;
-            if (!str_ends_with($packagePath, '.blueprint')) {
-                $packagePath .= '.blueprint';
-            }
             if (!File::exists($packagePath)) {
                 $this->error("Package not found: {$packagePath}");
                 return Command::FAILURE;
@@ -52,7 +49,7 @@ class RxInstallExtensionCommand extends Command
 
             $zip = new \ZipArchive();
             if ($zip->open($packagePath) !== true) {
-                $this->error('Invalid .blueprint package');
+                $this->error('Invalid extension package');
                 return Command::FAILURE;
             }
             $zip->extractTo($this->tmpPath);
@@ -60,9 +57,6 @@ class RxInstallExtensionCommand extends Command
 
             // Extract identifier from filename
             $this->identifier = pathinfo(basename($packageArg), PATHINFO_FILENAME);
-            if (str_ends_with($this->identifier, '.blueprint')) {
-                $this->identifier = substr($this->identifier, 0, -10);
-            }
         }
 
         // Parse conf.yml
@@ -74,9 +68,10 @@ class RxInstallExtensionCommand extends Command
         }
 
         $this->config = Yaml::parseFile($confFile);
-        $this->identifier = $this->config['identifier'] ?? $this->identifier;
-        $name = $this->config['name'] ?? $this->identifier;
-        $version = $this->config['version'] ?? '1.0.0';
+        $info = $this->config['info'] ?? $this->config;
+        $this->identifier = $info['identifier'] ?? $this->identifier;
+        $name = $info['name'] ?? $this->identifier;
+        $version = $info['version'] ?? '1.0.0';
 
         $this->info("Installing {$name} ({$this->identifier}) v{$version}...");
 
@@ -105,8 +100,15 @@ class RxInstallExtensionCommand extends Command
         $this->installWrappers($permPath, 'dashboard');
         $this->installWrappers($permPath, 'admin');
 
+        // Admin view and controller
+        $this->installAdminView($permPath);
+        $this->installAdminController($permPath);
+
         // Admin UI hooks
         $this->installAdminHooks($permPath);
+
+        // Install icon
+        $iconUrl = $this->installIcon($permPath);
 
         // Run migrations
         $this->runMigrations($permPath);
@@ -120,10 +122,10 @@ class RxInstallExtensionCommand extends Command
             [
                 'name' => $name,
                 'version' => $version,
-                'author' => $this->config['author'] ?? null,
-                'description' => $this->config['description'] ?? null,
-                'icon' => $this->config['icon'] ?? null,
-                'website' => $this->config['website'] ?? null,
+                'author' => $info['author'] ?? null,
+                'description' => $info['description'] ?? null,
+                'icon' => $iconUrl,
+                'website' => $info['website'] ?? null,
                 'installed' => true,
                 'enabled' => true,
             ]
@@ -148,16 +150,17 @@ class RxInstallExtensionCommand extends Command
     private function replacePlaceholders(string $path): void
     {
         $files = File::allFiles($path);
-        $identifier = $this->config['identifier'] ?? $this->identifier;
-        $name = $this->config['name'] ?? $identifier;
-        $version = $this->config['version'] ?? '1.0.0';
+        $info = $this->config['info'] ?? $this->config;
+        $identifier = $info['identifier'] ?? $this->identifier;
+        $name = $info['name'] ?? $identifier;
+        $version = $info['version'] ?? '1.0.0';
 
         $replacements = [
             '{identifier}' => $identifier,
             '{name}' => $name,
             '{version}' => $version,
-            '{author}' => $this->config['author'] ?? '',
-            '{description}' => $this->config['description'] ?? '',
+            '{author}' => $info['author'] ?? '',
+            '{description}' => $info['description'] ?? '',
             '{root}' => $this->basePath,
             '{engine}' => 'rx',
             '{viewcontext}' => 'rx',
@@ -193,7 +196,7 @@ class RxInstallExtensionCommand extends Command
         $componentsSource = "{$permPath}/components";
         if (!File::exists($componentsSource)) return;
 
-        $componentsTarget = base_path("resources/scripts/blueprint/extensions/{$this->identifier}");
+        $componentsTarget = base_path("resources/scripts/rx/extensions/{$this->identifier}");
         if (File::exists($componentsTarget)) File::deleteDirectory($componentsTarget);
         File::ensureDirectoryExists(dirname($componentsTarget));
         File::copyDirectory($componentsSource, $componentsTarget);
@@ -210,7 +213,7 @@ class RxInstallExtensionCommand extends Command
 
     private function injectReactComponents(array $components, string $permPath): void
     {
-        $componentFiles = File::glob(base_path('resources/scripts/blueprint/components/**/*.tsx'));
+        $componentFiles = File::glob(base_path('resources/scripts/rx/components/**/*.tsx'));
 
         // Build component mapping from config
         $mapping = [];
@@ -222,7 +225,7 @@ class RxInstallExtensionCommand extends Command
         }
 
         foreach ($mapping as $placeholderPath => $componentFile) {
-            $placeholderFullPath = base_path("resources/scripts/blueprint/components/{$placeholderPath}");
+            $placeholderFullPath = base_path("resources/scripts/rx/components/{$placeholderPath}");
             if (!File::exists($placeholderFullPath)) continue;
 
             $content = File::get($placeholderFullPath);
@@ -231,7 +234,7 @@ class RxInstallExtensionCommand extends Command
 
             // Remove old imports for this extension
             $content = preg_replace(
-                "/import {$componentName} from '@blueprint\/extensions\/{$this->identifier}\/[^']+';/",
+                "/import {$componentName} from '@rx\/extensions\/{$this->identifier}\/[^']+';/",
                 '',
                 $content
             );
@@ -239,16 +242,16 @@ class RxInstallExtensionCommand extends Command
 
             // Add new import and component
             $componentImport = $componentFile;
-            if (File::exists("{$permPath}/components/{$componentFile}") || File::exists(base_path("resources/scripts/blueprint/extensions/{$this->identifier}/{$componentFile}"))) {
+            if (File::exists("{$permPath}/components/{$componentFile}") || File::exists(base_path("resources/scripts/rx/extensions/{$this->identifier}/{$componentFile}"))) {
                 $content = preg_replace(
-                    '/\/\* blueprint\/import \*\//',
-                    "/* blueprint/import */import {$componentName} from '@blueprint/extensions/{$this->identifier}/{$componentImport}';",
+                    '/\/\* rx\/import \*\//',
+                    "/* rx/import */import {$componentName} from '@rx/extensions/{$this->identifier}/{$componentImport}';",
                     $content,
                     1
                 );
                 $content = preg_replace(
-                    '/\{\/\* blueprint\/react \*\/\}/',
-                    "{/* blueprint/react */}<{$componentName} />",
+                    '/\{\/\* rx\/react \*\/\}/',
+                    "{/* rx/react */}<{$componentName} />",
                     $content,
                     1
                 );
@@ -266,7 +269,7 @@ class RxInstallExtensionCommand extends Command
 
     private function injectNavigationRoutes(array $routes, string $permPath): void
     {
-        $routesFile = base_path('resources/scripts/blueprint/extends/routers/routes.ts');
+        $routesFile = base_path('resources/scripts/rx/extends/routers/routes.ts');
         if (!File::exists($routesFile)) return;
 
         $content = File::get($routesFile);
@@ -276,12 +279,12 @@ class RxInstallExtensionCommand extends Command
         foreach ($routes as $type => $routeDefs) {
             if ($type === 'account' || $type === 'server') {
                 foreach ($routeDefs as $def) {
-                    $importStatement = "import {$componentName}Route from '@blueprint/extensions/{$this->identifier}/{$def['component']}';";
+                    $importStatement = "import {$componentName}Route from '@rx/extensions/{$this->identifier}/{$def['component']}';";
                     $routeDefinition = $this->buildRouteDefinition($def, $componentName);
 
                     $content = preg_replace(
-                        '/\/\* blueprint\/import \*\//',
-                        "/* blueprint/import */{$importStatement}",
+                        '/\/\* rx\/import \*\//',
+                        "/* rx/import */{$importStatement}",
                         $content,
                         1
                     );
@@ -321,9 +324,9 @@ class RxInstallExtensionCommand extends Command
     private function installRoutes(string $permPath): void
     {
         $routeTypes = [
-            'web' => 'routes/blueprint/web',
-            'client' => 'routes/blueprint/client',
-            'application' => 'routes/blueprint/application',
+            'web' => 'routes/rx/web',
+            'client' => 'routes/rx/client',
+            'application' => 'routes/rx/application',
         ];
 
         $routerFiles = [
@@ -352,7 +355,7 @@ class RxInstallExtensionCommand extends Command
         $source = "{$permPath}/wrappers/{$type}.blade.php";
         if (!File::exists($source)) return;
 
-        $targetDir = base_path("resources/views/blueprint/{$type}/wrappers");
+        $targetDir = base_path("resources/views/rx/{$type}/wrappers");
         File::ensureDirectoryExists($targetDir);
 
         $target = "{$targetDir}/{$this->identifier}.blade.php";
@@ -406,6 +409,53 @@ class RxInstallExtensionCommand extends Command
 
             File::delete($tempFile);
         }
+    }
+
+    private function installAdminView(string $permPath): void
+    {
+        $viewRelative = $this->config['admin']['view'] ?? null;
+        if (!$viewRelative) return;
+
+        $viewSource = "{$permPath}/{$viewRelative}";
+        if (!File::exists($viewSource)) return;
+
+        $viewTarget = resource_path("views/admin/extensions/{$this->identifier}/index.blade.php");
+        File::ensureDirectoryExists(dirname($viewTarget));
+        File::copy($viewSource, $viewTarget);
+
+        $this->info("Admin view installed: admin.extensions.{$this->identifier}.index");
+    }
+
+    private function installAdminController(string $permPath): void
+    {
+        $controllerRelative = $this->config['admin']['controller'] ?? null;
+        if (!$controllerRelative) return;
+
+        $controllerSource = "{$permPath}/{$controllerRelative}";
+        if (!File::exists($controllerSource)) return;
+
+        $controllerTarget = app_path("Http/Controllers/Admin/Extensions/{$this->identifier}/{$this->identifier}ExtensionController.php");
+        File::ensureDirectoryExists(dirname($controllerTarget));
+        File::copy($controllerSource, $controllerTarget);
+
+        $this->info("Admin controller installed: App\\Http\\Controllers\\Admin\\Extensions\\{$this->identifier}\\{$this->identifier}ExtensionController");
+    }
+
+    private function installIcon(string $permPath): ?string
+    {
+        $iconRelative = ($this->config['info'] ?? $this->config)['icon'] ?? null;
+        if (!$iconRelative) return null;
+
+        $iconSource = "{$permPath}/{$iconRelative}";
+        if (!File::exists($iconSource)) return null;
+
+        $ext = pathinfo($iconRelative, PATHINFO_EXTENSION) ?: 'svg';
+        $iconTarget = public_path("rx-assets/icons/{$this->identifier}.{$ext}");
+        File::ensureDirectoryExists(dirname($iconTarget));
+        File::copy($iconSource, $iconTarget);
+
+        $this->info("Icon installed: /rx-assets/icons/{$this->identifier}.{$ext}");
+        return "/rx-assets/icons/{$this->identifier}.{$ext}";
     }
 
     private function runPostInstallCommand(string $permPath): void

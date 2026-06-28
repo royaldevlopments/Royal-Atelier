@@ -1,6 +1,6 @@
 # Royal Atelier
 
-A custom extension framework for [Royal Panel](https://github.com/royaldevlopments/royalpanel), replacing Blueprint with a modern, PHP-first architecture.
+A custom extension framework for [Royal Panel](https://github.com/royaldevlopments/royalpanel) with a modern, PHP-first architecture.
 
 ## Features
 
@@ -8,7 +8,7 @@ A custom extension framework for [Royal Panel](https://github.com/royaldevlopmen
 - **Comprehensive API** — `ExtensionLibrary` for managing extension configs, settings, and lifecycle
 - **Admin UI** — Neon Gaming themed extension manager with install/uninstall/toggle
 - **Full lifecycle management** — install, remove, enable/disable extensions via CLI or web
-- **Blueprint compatible** — works with existing `.blueprint` packages and all 74+ extensions
+- **Extension package support** — installs from `.blueprint` package format
 - **React hook injection** — placeholder component replacement, route registration, webpack integration
 - **Console commands** — `rx:install`, `rx:uninstall`, `rx:install-ext`, `rx:remove-ext`
 
@@ -26,7 +26,7 @@ php artisan migrate
 ### CLI
 
 ```bash
-# Install an extension from a .blueprint package
+# Install an extension from a package file
 php artisan rx:install-ext /path/to/extension.blueprint
 
 # Remove an extension
@@ -51,7 +51,7 @@ Navigate to `/admin/extensions/rx` to manage extensions via the web UI.
 
 ## How it works
 
-Royal Atelier extracts `.blueprint` packages into `.rx/extensions/`, then:
+Royal Atelier extracts extension packages into `.rx/extensions/`, then:
 
 1. Parses `conf.yml` (YAML)
 2. Replaces placeholders (`{identifier}`, `{name}`, etc.) in all files
