@@ -1,0 +1,25 @@
+{
+  "name": "royalpanel/royal-atelier",
+  "description": "Royal Panel Extension Framework - Custom extension system for Royal Panel",
+  "type": "library",
+  "require": {
+    "php": ">=8.1",
+    "illuminate/support": "*",
+    "illuminate/database": "*",
+    "symfony/yaml": "*",
+    "ext-zip": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "RoyalPanel\\RoyalAtelier\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "RoyalPanel\\RoyalAtelier\\AtelierServiceProvider"
+      ]
+    }
+  }
+}
