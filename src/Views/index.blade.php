@@ -486,7 +486,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Package File</label>
-                        <input type="file" name="package" class="form-control" accept=".zip" required>
+                        <input type="file" name="package" class="form-control" accept=".royal" required>
                         <p class="text-muted small" style="margin-top:6px;color:var(--atelier-muted);opacity:0.6;">
                             Upload an extension package to install.
                         </p>

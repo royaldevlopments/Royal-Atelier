@@ -53,7 +53,7 @@ Navigate to `/admin/extensions/rx` to manage extensions via the web UI.
 
 Royal Atelier extracts extension packages into `.rx/extensions/`, then:
 
-1. Parses `conf.yml` (YAML)
+1. Parses `royal.yml` (YAML)
 2. Replaces placeholders (`{identifier}`, `{name}`, etc.) in all files
 3. Injects React component imports/exports via magic comments
 4. Registers routes (web/client/application)

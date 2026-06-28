@@ -1,0 +1,30 @@
+info:
+  name: "Sample Extension"
+  identifier: "sample-ext"
+  description: "A sample Royal Package extension"
+  version: "1.0.0"
+  author: "Royal Devlopments"
+  icon: "public/icon.png"
+  website: "https://github.com/royaldevlopments"
+
+admin:
+  view: "admin/view.blade.php"
+  controller: "admin/controller.php"
+  css: ""
+  wrapper: ""
+
+dashboard:
+  css: ""
+  wrapper: ""
+  components: ""
+
+requests:
+  views: ""
+  controllers: ""
+  routers:
+    application: ""
+    client: ""
+    web: ""
+
+database:
+  migrations: ""

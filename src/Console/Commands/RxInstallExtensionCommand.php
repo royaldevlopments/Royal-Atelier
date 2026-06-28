@@ -47,6 +47,12 @@ class RxInstallExtensionCommand extends Command
                 return Command::FAILURE;
             }
 
+            $ext = pathinfo($packagePath, PATHINFO_EXTENSION);
+            if ($ext !== 'royal') {
+                $this->error('Invalid package format. Expected .royal file.');
+                return Command::FAILURE;
+            }
+
             $zip = new \ZipArchive();
             if ($zip->open($packagePath) !== true) {
                 $this->error('Invalid extension package');
@@ -59,10 +65,10 @@ class RxInstallExtensionCommand extends Command
             $this->identifier = pathinfo(basename($packageArg), PATHINFO_FILENAME);
         }
 
-        // Parse conf.yml
-        $confFile = "{$this->tmpPath}/conf.yml";
+        // Parse royal.yml
+        $confFile = "{$this->tmpPath}/royal.yml";
         if (!File::exists($confFile)) {
-            $this->error('conf.yml not found');
+            $this->error('royal.yml not found');
             File::deleteDirectory($this->tmpPath);
             return Command::FAILURE;
         }
